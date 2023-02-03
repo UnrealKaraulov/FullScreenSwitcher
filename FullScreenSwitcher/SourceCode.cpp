@@ -7,7 +7,7 @@
 
 using namespace std;
 
-#define IsKeyPressed(key) (( GetAsyncKeyState( key ) >> 16 ) ==-1)
+#define IsKeyPressed(key) (( GetAsyncKeyState( key ) >> 16 )==-1)
 
 const long windowstyle = 0x6CF0000;
 const long windowexstyle = 0x20040900;
@@ -136,7 +136,7 @@ unsigned long __stdcall WindowModuleThread( void * a )
 	int maxwait = 80;
 
 	// Ждать появления окна Warcraft III
-	while ( maxwait > 0 )
+	while ( TRUE  )
 	{
 		Sleep( 100 );
 		war3window = FindWindow( "Warcraft III" , NULL );
@@ -145,10 +145,18 @@ unsigned long __stdcall WindowModuleThread( void * a )
 		if ( war3window )
 			break;
 		maxwait--;
+		if ( maxwait < 0 )
+		{
+			// Тут по идее должен быть поиск окна если это не варкрафт :)
+			EnumWindows( FindTopWindow , GetCurrentProcessId( ) );
+			if ( !war3window )
+			{
+				MessageBox( 0 , "Warcraft III window not found!" , "ERROR" , MB_ICONSTOP );
+				return 0;
+			}
+			break;
+		}
 	}
-
-	if ( !war3window )
-		return 0;
 
 	// Если вар запущен в полноэкранном режиме то переключение не будет работать. (исправлю в следующей версии)
 	if ( IsFullScreen( war3window ) )
